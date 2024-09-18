@@ -1,12 +1,29 @@
+from pathlib import Path
+
 import torch
 from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
+
+from utils import ENCODING
 
 
 class SentimentDataset(Dataset):
-    def __init__(self, data, tokenizer, max_len=128):
-        self.data = data
+    def __init__(self, data_path: Path, tokenizer, max_len=128):
+        self.data_path = data_path
+        self.data = []
         self.tokenizer = tokenizer
         self.max_len = max_len
+        
+        self._read_data()
+        
+    def _read_data(self) -> None:
+        with open(self.data_path, "r", encoding=ENCODING) as file:
+            rows = file.readlines()
+            for line in tqdm(rows, "Reading data"):
+                # Every row in preprocessed_data.txt is formatted as
+                # "<label> <text>"
+                label, text = line[:1], line[2:]
+                self.data.append((text, int(label)))
 
     def __len__(self):
         return len(self.data)
