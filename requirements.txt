@@ -1,2 +1,4 @@
 pandas
+transformers
+scikit-learn
 tqdm
