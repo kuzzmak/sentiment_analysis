@@ -8,10 +8,11 @@ from utils import ENCODING
 
 
 class SentimentDataset(Dataset):
-    def __init__(self, data_path: Path, tokenizer, max_len=128):
+    def __init__(self, data_path: Path, tokenizer, num_samples: int = -1, max_len=128):
         self.data_path = data_path
         self.data = []
         self.tokenizer = tokenizer
+        self.num_samples = num_samples
         self.max_len = max_len
         
         self._read_data()
@@ -24,6 +25,10 @@ class SentimentDataset(Dataset):
                 # "<label> <text>"
                 label, text = line[:1], line[2:]
                 self.data.append((text, int(label)))
+
+        # If num_samples is set, only use the first num_samples
+        if self.num_samples > 0:
+            self.data = self.data[:self.num_samples]
 
     def __len__(self):
         return len(self.data)
