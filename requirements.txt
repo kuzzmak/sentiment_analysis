@@ -1,4 +1,5 @@
 pandas
 transformers
 scikit-learn
+tensorboard
 tqdm
