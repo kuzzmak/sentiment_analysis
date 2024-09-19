@@ -58,16 +58,34 @@ def predict_sentiment(
     return "Positive" if prediction == 1 else "Negative"
 
 
-if __name__ == "__main__":
-    run_name = "2024-09-19_23-14-28"
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+def prepare_model_and_tokenizer(
+    run_name: str,
+) -> tuple[BertForSequenceClassification, BertTokenizer]:
+    """
+    Load the BERT model and tokenizer from the specified run directory.
 
+    Args:
+        run_name (str): The name of the run directory containing the model
+            and tokenizer files.
+
+    Returns:
+        tuple[BertForSequenceClassification, BertTokenizer]: A tuple containing
+            the BERT model and tokenizer.
+    """
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = BertForSequenceClassification.from_pretrained(
         CHECKPOINTS_DIR / run_name / "best"
     )
     model = model.to(device)
     model.eval()
     tokenizer = BertTokenizer.from_pretrained(CHECKPOINTS_DIR / run_name / "best")
+    return model, tokenizer
+
+
+if __name__ == "__main__":
+    run_name = "2024-09-19_23-14-28"
+
+    model, tokenizer = prepare_model_and_tokenizer(run_name)
 
     text = "this is so clever and awesome, i can't believe it...!"
 
