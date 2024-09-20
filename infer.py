@@ -91,4 +91,6 @@ if __name__ == "__main__":
 
     sentiment = predict_sentiment(text, model, tokenizer)
 
-    print(sentiment)
+    print(
+        f'Model predicted that the sentiment of the message: "{text}" is "{sentiment}"'
+    )
