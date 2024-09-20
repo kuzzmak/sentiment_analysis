@@ -1,13 +1,21 @@
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from utils import ENCODING
 
 
 class SentimentDataset(Dataset):
+    """
+    A custom dataset class for sentiment analysis.
+    Args:
+        data_path (Path): Path to the dataset file.
+        tokenizer: Tokenizer to encode the text data.
+        num_samples (int, optional): Number of samples to use from the dataset. Defaults to -1 (use all samples).
+        max_len (int, optional): Maximum length of the tokenized sequences. Defaults to 128.
+    """
     def __init__(self, data_path: Path, tokenizer, num_samples: int = -1, max_len=128):
         self.data_path = data_path
         self.data = []
