@@ -185,6 +185,7 @@ if __name__ == "__main__":
 
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
+    # Number of samples that will be used for training and validation
     train_samples = 10000
     val_samples = 5000
 
