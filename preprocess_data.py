@@ -41,31 +41,6 @@ def extract_target_and_content(row: str) -> Optional[tuple[str, str]]:
     return None
 
 
-def extact_data_from_rows(data: list[str]) -> list[tuple[str, str]]:
-    """
-    Extracts the target and content from a list of rows.
-
-    Args:
-        data (list[str]): A list of strings from which to extract the target
-            and content.
-
-    Returns:
-        list[tuple[str, str]]: A list of tuples containing the target and
-            content.
-    """
-    extracted_data = []
-    skipped_rows = 0
-    for row in tqdm(data, "Extracting data from rows"):
-        target_content = extract_target_and_content(row)
-        if target_content:
-            extracted_data.append(target_content)
-        else:
-            print(row)
-            skipped_rows += 1
-    print(f"Skipped {skipped_rows} rows.")
-    return extracted_data
-
-
 def _strip_special_chars(text: str) -> str:
     """
     Strips special characters from a given text.
