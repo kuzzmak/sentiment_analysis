@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 
 import torch
 from torch.utils.data import Dataset
@@ -36,6 +37,7 @@ class SentimentDataset(Dataset):
 
         # If num_samples is set, only use the first num_samples
         if self.num_samples > 0:
+            random.shuffle(self.data)
             self.data = self.data[:self.num_samples]
 
     def __len__(self):
