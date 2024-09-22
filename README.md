@@ -81,7 +81,7 @@ Mentioned command outputs something like
 ```bash
 Model predicted that the sentiment of the message:
 
-        "I hate this product!"
+        "staying @ home today"
 is
-        "Positive"
+        "Negative"
 ```
