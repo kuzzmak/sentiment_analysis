@@ -71,7 +71,7 @@ Weights of the finetuned model can be downloaded on [this](https://drive.google.
 Inference can be ran using following command
 
 ```bash
-python infer.py --run_name 2024-09-22_22-31-42 --text "I hate this product!"
+python infer.py --run_name 2024-09-22_22-31-42 --text "staying @ home today"
 ```
 
 `run_name` is the foler name in `checkpoints` folder, i.e. there needs to exist `checkpoints/2024-09-22_22-31-42` folder with model weights.
