@@ -1,4 +1,8 @@
-# Environment preparation
+# Sentiment analysis
+
+Goal of this project is to predict sentiment of user messages by finetuning `BERT` model. Data on which finetuning will be done is located in `data\rn_data.csv.gz`.
+
+## Environment preparation
 
 One of the simpler ways to have working python environment is to install and use [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html). After `conda` in installed run following command to init environment
 
@@ -27,3 +31,55 @@ pip install -r requirements.txt
 ```
 
 Now your environment should be complete.
+
+## Data preparetion
+
+Data for finetuning is also located in this repository. It first needs to be prepared in order to be used for model finetuning. This can be done by executing following command
+
+```bash
+python preprocess_data.py
+```
+
+- Process extracts data in `data\rn_data.csv`
+- Data is filtered in a way that corrupt lines are discarded. Raw filtered data is located in `data\preprocessed_data.txt`. Corrupt data is located in `data\corrupt_data.txt`.
+- Preprocessed data is split into train, val and test datasets. Ratio for train data is 0.7, val 0.2 and test 0.1. Train data is stored in `data\train_data.txt`.
+
+## Finetuning
+
+In order to fintune BERT, run following command
+
+```bash
+python train.py --epochs 3 --train_samples 100000 --val_samples 10000 --test_samples 10000 --batch_size 128
+```
+
+It is recommended by the [BERT](https://arxiv.org/pdf/1810.04805) paper authors that finetuning is done for 3 epochs and learning rate is in the range of e-5.
+
+This process generates new model weights which can be found in `checkpoints/data_and_time_folder/best`. There is also a `Tensorboard` file generated in `runs/sentiment_analysis/data_and_time_folder` which can be used to analyze finetuning process. `Tensorboard` can be launched like
+
+```bash
+tensorboard --logdir runs\sentiment_analysis
+```
+
+which spawns local server on `http://localhost:6006`
+
+## Inference
+
+In order to run inference using `BERT` it's necessary to have at least one checkpoint in `checkpoints/data_and_time_folder`.
+
+Inference can be ran using following command
+
+```bash
+python infer.py --run_name 2024-09-22_22-31-42 --text "I hate this product!"
+```
+
+`run_name` is the foler name in `checkpoints` folder, i.e. there needs to exist `checkpoints/2024-09-22_22-31-42` folder with model weights.
+
+Mentioned command outputs something like
+
+```bash
+Model predicted that the sentiment of the message:
+
+        "I hate this product!"
+is
+        "Positive"
+```
