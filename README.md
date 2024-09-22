@@ -66,6 +66,8 @@ which spawns local server on `http://localhost:6006`
 
 In order to run inference using `BERT` it's necessary to have at least one checkpoint in `checkpoints/data_and_time_folder`.
 
+Weights of the finetuned model can be downloaded on [this](https://drive.google.com/drive/folders/12Rz8HtjgOZnWTmJ69MG3UCcwgiXgxr6A?usp=sharing) link. Place the downloaded `checkpoints` in the root of this project.
+
 Inference can be ran using following command
 
 ```bash
