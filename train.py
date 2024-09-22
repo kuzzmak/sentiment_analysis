@@ -1,4 +1,6 @@
+import argparse
 from pathlib import Path
+
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -36,9 +38,9 @@ def eval_step(
 
     with torch.no_grad():
         for batch in tqdm(data_loader, total=len(data_loader), desc="Evaluation..."):
-            input_ids = batch["input_ids"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            labels = batch["label"].to(device)
+            input_ids = batch["input_ids"].to(model.device)
+            attention_mask = batch["attention_mask"].to(model.device)
+            labels = batch["label"].to(model.device)
 
             outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
             loss = outputs.loss
@@ -68,9 +70,9 @@ def train_step(
     total_acc = 0
 
     for batch in tqdm(data_loader, total=len(data_loader), desc="Training..."):
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        labels = batch["label"].to(device)
+        input_ids = batch["input_ids"].to(model.device)
+        attention_mask = batch["attention_mask"].to(model.device)
+        labels = batch["label"].to(model.device)
 
         optimizer.zero_grad()
         outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
@@ -107,7 +109,8 @@ def train_model(
     train_loader: DataLoader,
     val_loader: DataLoader,
     optimizer: AdamW,
-    epochs: int = 3,
+    tokenizer: BertTokenizer,
+    epochs: int = 1,
     run_name: str = "run",
 ) -> None:
     """
@@ -117,8 +120,9 @@ def train_model(
         train_loader (DataLoader): DataLoader for the training dataset.
         val_loader (DataLoader): DataLoader for the validation dataset.
         optimizer (AdamW): Optimizer for training the model.
-        epochs (int, optional): Number of training epochs. Defaults to 3.
-        run_name (str, optional): Name for the training run, used for logging.
+        tokenizer (BertTokenizer): Tokenizer used for encoding the text data.
+        epochs (int, optional): Number of training epochs. Defaults to 1.
+        run_name (str, optional): Name of the training run for logging purposes.
             Defaults to "run".
     """
     tb = SummaryWriter("runs/sentiment_analysis/" + run_name)
@@ -149,15 +153,18 @@ def train_model(
     print("Training complete!")
 
 
-def evaluate_best_model(run_name: str, batch_size: int,
-                        device: torch.device) -> None:
+def evaluate_best_model(
+    run_name: str, batch_size: int, device: torch.device, num_samples: int = -1
+) -> None:
     """
     Evaluates the best model for a given run.
     Args:
         run_name (str): The name of the run to evaluate.
         batch_size (int): The batch size to use for evaluation.
-        device (torch.device): The device to run the evaluation on
-            (e.g., 'cpu' or 'cuda').
+        device (torch.device): The device to run the model on (e.g., 'cpu'
+            or 'cuda').
+        num_samples (int, optional): The number of samples to use for
+            evaluation. If -1, use the entire test dataset. Defaults to -1.
     """
     print("Evaluating best model...")
 
@@ -167,15 +174,38 @@ def evaluate_best_model(run_name: str, batch_size: int,
     model = model.to(device)
     tokenizer = BertTokenizer.from_pretrained(CHECKPOINTS_DIR / run_name / "best")
 
-    test_samples = 5000
-    test_dataset = SentimentDataset(TEST_DATA_PATH, tokenizer, test_samples)
+    test_dataset = SentimentDataset(TEST_DATA_PATH, tokenizer, num_samples)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     test_loss, test_acc = eval_step(model, test_dataloader)
     print(f"Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}")
 
 
-if __name__ == "__main__":
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Finetune a BERT model for sentiment analysis."
+    )
+    parser.add_argument(
+        "--epochs", type=int, default=1, help="Number of training epochs."
+    )
+    parser.add_argument(
+        "--train_samples", type=int, default=-1, help="Number of training samples."
+    )
+    parser.add_argument(
+        "--val_samples", type=int, default=-1, help="Number of validation samples."
+    )
+    parser.add_argument(
+        "--test_samples", type=int, default=-1, help="Number of test samples."
+    )
+    parser.add_argument(
+        "--batch_size", type=int, default=128, help="Batch size for training."
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
     # Used for checkpointing and Tensorboard
     run_name = get_datetime()
 
@@ -185,23 +215,17 @@ if __name__ == "__main__":
 
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
-    # Number of samples that will be used for training and validation
-    train_samples = 10000
-    val_samples = 5000
-
-    train_dataset = SentimentDataset(TRAIN_DATA_PATH, tokenizer, train_samples)
-    val_dataset = SentimentDataset(VAL_DATA_PATH, tokenizer, val_samples)
-
-    batch_size = 128
+    train_dataset = SentimentDataset(TRAIN_DATA_PATH, tokenizer, args.train_samples)
+    val_dataset = SentimentDataset(VAL_DATA_PATH, tokenizer, args.val_samples)
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=batch_size,
+        batch_size=args.batch_size,
         shuffle=True,
         pin_memory=True,
         num_workers=2,
     )
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -212,8 +236,15 @@ if __name__ == "__main__":
 
     optimizer = AdamW(model.parameters(), lr=1e-5)
 
-    train_model(model, train_loader, val_loader, optimizer, 3, run_name)
+    train_model(
+        model, train_loader, val_loader, optimizer, tokenizer, args.epochs, run_name
+    )
 
     del train_loader, val_loader, model, tokenizer
 
-    evaluate_best_model(run_name, batch_size, device)
+    evaluate_best_model(run_name, args.batch_size, device, args.test_samples)
+
+
+if __name__ == "__main__":
+    main()
+    # python train.py --epochs 3 --train_samples 1000 --val_samples 500 --test_samples 500 --batch_size 128
