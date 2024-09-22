@@ -120,4 +120,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # python infer.py --run_name 2024-09-22_22-19-39 --text "I love this product!"
+    # python infer.py --run_name 2024-09-22_22-31-42 --text "I hate this product!"
