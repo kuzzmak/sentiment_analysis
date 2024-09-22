@@ -34,7 +34,7 @@ Now your environment should be complete.
 
 ## Data preparetion
 
-Data for finetuning is also located in this repository. It first needs to be prepared in order to be used for model finetuning. This can be done by executing following command
+Data for finetuning can be downloaded on [this](https://drive.google.com/file/d/12TRJWiUT69hfffJBfEs_DYh4_CX41mCP/view?usp=sharing) link. It needs to be put into `data` folder inside this repository. It first needs to be prepared in order to be used for model finetuning. This can be done by executing following command
 
 ```bash
 python preprocess_data.py
