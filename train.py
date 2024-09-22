@@ -247,4 +247,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # python train.py --epochs 3 --train_samples 1000 --val_samples 500 --test_samples 500 --batch_size 128
+    # python train.py --epochs 3 --train_samples 100000 --val_samples 10000 --test_samples 10000 --batch_size 128
