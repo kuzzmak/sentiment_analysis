@@ -83,7 +83,7 @@ def prepare_model_and_tokenizer(
 
 
 if __name__ == "__main__":
-    run_name = "2024-09-19_23-14-28"
+    run_name = "2024-09-20_19-10-42"
 
     model, tokenizer = prepare_model_and_tokenizer(run_name)
 
@@ -92,5 +92,5 @@ if __name__ == "__main__":
     sentiment = predict_sentiment(text, model, tokenizer)
 
     print(
-        f'Model predicted that the sentiment of the message: "{text}" is "{sentiment}"'
+        f'\nModel predicted that the sentiment of the message: \n\n\t"{text}" \nis \n\t"{sentiment}"'
     )
