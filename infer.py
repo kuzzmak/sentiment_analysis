@@ -1,3 +1,5 @@
+import argparse
+
 import torch
 from transformers import BertTokenizer, BertForSequenceClassification
 
@@ -82,15 +84,40 @@ def prepare_model_and_tokenizer(
     return model, tokenizer
 
 
-if __name__ == "__main__":
-    run_name = "2024-09-20_19-10-42"
+def parse_args():
+    parser = argparse.ArgumentParser(description="Sentiment analysis inference.")
+    parser.add_argument(
+        "--run_name",
+        type=str,
+        default="run",
+        help="The name of the run directory containing the model and tokenizer files.",
+    )
+    parser.add_argument(
+        "--text",
+        type=str,
+        default="",
+        help="The input text to analyze.",
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    run_name = args.run_name
+    if not (CHECKPOINTS_DIR / run_name).exists():
+        print(f"Run directory '{run_name}' does not exist.")
+        return
 
     model, tokenizer = prepare_model_and_tokenizer(run_name)
 
-    text = "this is so clever and awesome, i can't believe it...!"
-
-    sentiment = predict_sentiment(text, model, tokenizer)
+    sentiment = predict_sentiment(args.text, model, tokenizer)
 
     print(
-        f'\nModel predicted that the sentiment of the message: \n\n\t"{text}" \nis \n\t"{sentiment}"'
+        f'\nModel predicted that the sentiment of the message: \n\n\t"{args.text}" \nis \n\t"{sentiment}"'
     )
+
+
+if __name__ == "__main__":
+    main()
+    # python infer.py --run_name 2024-09-22_22-19-39 --text "I love this product!"
